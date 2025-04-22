@@ -1,0 +1,10 @@
+# Python
+venv/
+*.pyc
+__pycache__/
+.env
+
+# IDE/OS specific
+.idea/
+.vscode/
+*.DS_Store
