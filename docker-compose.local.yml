@@ -1,18 +1,16 @@
-# my-todo-app/docker-compose.local.yml
 version: '3.8'
 services:
   db_local_mysql:
-    image: mysql:8.0
+    image: mysql:8.0.39
     container_name: todo_db_local_mysql
-    command: --default-authentication-plugin=mysql_native_password
-    restart: always
+    command: --default-authentication-plugin=mysql_native_password --default-time-zone=+00:00
+    restart: unless-stopped
     environment:
       # 루트 .env 파일의 변수 참조
       MYSQL_ROOT_PASSWORD: ${MYSQL_LOCAL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_LOCAL_DATABASE}
       MYSQL_USER: ${MYSQL_LOCAL_USER}
       MYSQL_PASSWORD: ${MYSQL_LOCAL_PASSWORD}
-      TZ: Asia/Seoul
     ports:
       - "3306:3306"       # 로컬 PC 포트 : 컨테이너 포트
     volumes:

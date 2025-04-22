@@ -6,200 +6,119 @@ document.addEventListener("DOMContentLoaded", () => {
     const todoDescription = document.getElementById("todoDescription");
     const addTodoButton = document.getElementById("addTodo");
     const todoList = document.getElementById("todoList");
+    const emptyTodoMessage = document.getElementById("emptyTodoMessage");
 
     // API 기본 URL (백엔드 서버 주소)
-    const API_URL = "http://localhost:8000/api";
+    const API_URL = "/api";
 
-    // 1. 페이지 로드 시 API 연결 상태 확인
-    checkApiStatus();
+    // --- 함수 정의 ---
 
-    // 2. 페이지 로드 시 할 일 목록 불러오기
-    loadTodos();
+    // 에러 메시지 표시
+    function displayError(message, error) {
+        console.error(message, error);
+        apiStatusElement.textContent = `API 연결 오류`;
+        apiStatusElement.classList.add("api-error");
+    }
 
-    // 3. 추가 버튼 클릭 이벤트 리스너 등록
-    addTodoButton.addEventListener("click", addTodo);
+    // 성공 / 정보 메시지 표시
+    function displayInfo(message) {
+        apiStatusElement.textContent = message;
+        apiStatusElement.classList.add("api-success");
+    }
 
-    // API 상태 확인 함수
+    // 날짜 포맷팅
+    function formatDateTime(isoString) {
+        if (!isoString) return "";
+        try {
+            const date = new Date(isoString);
+            if (isNaN(date.getTime())) {
+                return "시간 정보 없음";
+            }
+            return date.toLocaleString("ko-KR");
+        } catch (e) {
+            console.error("날짜 포맷팅 오류:", isoString, e);
+            return "시간 정보 오류";
+        }
+    }
+
+    // API 상태 확인
     async function checkApiStatus() {
         try {
-            // fetch 함수로 API 루트 엔드포인트에 GET 요청 보내기
-            const response = await fetch(`${API_URL}`);
+            // 로컬 테스트
+            // const rootUrl = "http://localhost:8000";
+            // const response = await fetch(`${rootUrl}`);
+
+            // 배포
+            const response = await fetch(`${API_URL}/health`);
+
+            if (!response.ok) throw new Error("API 연결 실패");
             const data = await response.json();
-
-            // 응답이 성공적이면 상태 표시 업데이트
-            apiStatusElement.textContent = `API 상태: ${data.message}`;
-            apiStatusElement.classList.add("api-success");
+            displayInfo(
+                `API 상태: ${data.message}, DB 상태: ${data.database_status}`
+            );
+            return true;
         } catch (error) {
-            // 오류 발생 시 에러 메시지 표시
-            apiStatusElement.textContent =
-                "Disconnected";
-            apiStatusElement.classList.add("api-error");
-            console.error("API 상태 확인 오류:", error);
+            displayError("API 연결 실패:", error);
+            return false;
         }
     }
 
-    // 할 일 목록을 불러오는 함수
-    async function loadTodos() {
-        try {
-            // /api/todos 엔드포인트에 GET 요청
-            const response = await fetch(`${API_URL}/todos`);
-            if (!response.ok) {
-                throw new Error(
-                    `API 요청 실패: ${response.status} ${response.statusText}`
-                );
-            }
-            const data = await response.json();
-
-            console.log("할 일 목록:", data); // 데이터 확인용
-
-            if (Array.isArray(data)) {
-                renderTodos(data); // 데이터 렌더링
-            } else {
-                console.error("API 응답 배열이 아닙니다:", data);
-                // 필요 시 사용자에게 오류 메시지 표시
-            }
-        } catch (error) {
-            console.error("할 일 목록 불러오기 오류:", error);
-            // 필요 시 사용자에게 오류 메시지 표시 (예: apiStatusElement 업데이트)
-            const apiStatusElement = document.getElementById("apiStatus");
-            if (apiStatusElement) {
-                apiStatusElement.textContent =
-                    "목록을 불러오는 중 오류가 발생했습니다.";
-                apiStatusElement.classList.add("api-error"); // className으로 기준 클래스 대체
-            }
-        }
-    }
-
-    // 새 할 일 추가 함수
-    async function addTodo() {
-        // 입력값 가져오기
-        const title = todoInput.value.trim();
-        const description = todoDescription.value.trim();
-
-        // 제목이 비어있으면 함수 종료
-        if (!title) {
-            alert("할 일을 입력해주세요!");
-            return;
-        }
-
-        // 할 일 객체 생성
-        const newTodo = {
-            title,
-            description,
-            completed: false,
-        };
-
-        try {
-            // /api/todos 엔드포인트에 POST 요청
-            const response = await fetch(`${API_URL}/todos`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(newTodo),
-            });
-
-            const data = await response.json();
-            console.log("할 일 추가 결과:", data);
-
-            // 입력 필드 초기화
-            todoInput.value = "";
-            todoDescription.value = "";
-
-            // 할 일 목록 다시 불러오기
-            loadTodos();
-        } catch (error) {
-            console.error("할 일 추가 오류:", error);
-        }
-    }
-
-    // 할 일 목록을 화면에 표시하는 함수
-    function renderTodos(todos) {
-        todoList.innerHTML = "";
-        const emptyMessageElement = document.getElementById("emptyTodoMessage");
-
-        if (!emptyMessageElement) {
-            console.error("ID 'emptyTodoMessage' 요소를 찾을 수 없습니다.");
-        } else if (todos.length === 0) {
-            emptyMessageElement.style.display = "block";
-        } else {
-            emptyMessageElement.style.display = "none";
-        }
-
-        function formatDateTime(isoString) {
-            /* ... 이전과 동일 ... */
-            if (!isoString) return "";
-            try {
-                const date = new Date(isoString);
-                if (isNaN(date.getTime())) {
-                    console.warn("유효하지 않은 날짜 형식:", isoString);
-                    return "시간 정보 없음";
-                }
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, "0");
-                const day = String(date.getDate()).padStart(2, "0");
-                const hours = String(date.getHours()).padStart(2, "0");
-                const minutes = String(date.getMinutes()).padStart(2, "0");
-                return `${year}년 ${month}월 ${day}일 ${hours}:${minutes}`;
-            } catch (e) {
-                console.error("날짜 포맷팅 오류:", isoString, e);
-                return "시간 정보 오류";
-            }
-        }
-
-        todos.forEach((todo) => {
-            const todoItem = document.createElement("li");
-            // data 속성에 원래 값 저장 (편집 취소 시 복구용)
-            todoItem.dataset.id = todo.id;
-            todoItem.dataset.title = todo.title;
-            todoItem.dataset.description = todo.description || ""; // 설명 없을 시 빈 문자열
-
-            // 초기 클래스 설정
-            todoItem.className = `todo-item ${
-                todo.completed ? "completed" : ""
-            }`;
-
-            // 기본 표시 내용 생성
-            renderTodoItemContent(todoItem, todo, formatDateTime);
-
-            todoList.appendChild(todoItem);
-        });
-    }
-
-    // 할 일 항목의 내용을 렌더링하는 함수 (표시 모드)
-    function renderTodoItemContent(todoItem, todo, formatDateTimeFn) {
+    // 단일 Todo 항목 <li> 요소 생성/업데이트 함수
+    function createOrUpdateTodoElement(todo) {
         const todoId = todo.id;
-        const title = todo.title;
-        const description = todo.description || "";
-        const completed = todo.completed;
-        const createdAtFormatted = formatDateTimeFn(todo.created_at);
-        const updatedAtFormatted = formatDateTimeFn(todo.updated_at);
+        let todoItem = todoList.querySelector(
+            `.todo-item[data-id="${todoId}"]`
+        );
 
-        // 기존 내용 비우기
-        todoItem.innerHTML = "";
+        // 새 항목이면 li 생성, 아니면 기존 li 사용
+        if (!todoItem) {
+            todoItem = document.createElement("li");
+            todoItem.dataset.id = todoId;
+            todoItem.classList.add("todo-item");
+        }
 
-        // 클래스 초기화 (혹시 editing 클래스가 있다면 제거)
-        todoItem.classList.remove("editing");
+        // 데이터셋 업데이트 (편집 취소 시 복구용)
+        todoItem.dataset.title = todo.title;
+        todoItem.dataset.description = todo.description || "";
+        todoItem.dataset.completed = todo.completed; // 완료 상태 저장
+        todoItem.dataset.createdAt = todo.created_at;
+        todoItem.dataset.updatedAt = todo.updated_at;
+
+        // 완료 상태에 따라 클래스 토글
+        if (todo.completed) {
+            todoItem.classList.add("completed");
+        } else {
+            todoItem.classList.remove("completed");
+        }
+        todoItem.classList.remove("editing"); // 항상 표시 모드로
 
         // innerHTML 설정 (표시 모드)
         todoItem.innerHTML = `
             <div class="todo-text">
-                <h3 class="todo-title-display">${title}</h3>
+                <h3 class="todo-title-display">${todo.title}</h3>
                 ${
-                    description
-                        ? `<p class="todo-description-display">${description}</p>`
+                    todo.description
+                        ? `<p class="todo-description-display">${todo.description}</p>`
                         : ""
                 }
-                <input type="text" class="todo-title-input" value="${title}" style="display: none;">
-                <textarea class="todo-description-input" style="display: none;">${description}</textarea>
+                <input type="text" class="todo-title-input" value="${
+                    todo.title
+                }" style="display: none;">
+                <textarea class="todo-description-input" style="display: none;">${
+                    todo.description || ""
+                }</textarea>
                 <div class="todo-timestamps">
-                    <span class="created-at">생성 시간: ${createdAtFormatted}</span>
-                    <span class="updated-at">마지막 수정: ${updatedAtFormatted}</span>
+                    <span class="created-at">생성: ${formatDateTime(
+                        todo.created_at
+                    )}</span>
+                    <span class="updated-at">수정: ${formatDateTime(
+                        todo.updated_at
+                    )}</span>
                 </div>
             </div>
             <div class="todo-actions">
                 <button class="complete-btn action-btn">${
-                    completed ? "취소" : "완료"
+                    todo.completed ? "취소" : "완료"
                 }</button>
                 <button class="edit-btn action-btn">수정</button>
                 <button class="delete-btn action-btn">삭제</button>
@@ -207,95 +126,204 @@ document.addEventListener("DOMContentLoaded", () => {
                 <button class="cancel-btn action-btn" style="display: none;">취소</button>
             </div>
         `;
-
-        // 버튼 이벤트 리스너 다시 연결
-        addEventListenersToTodoItem(todoItem, todoId);
+        return todoItem; // 생성 또는 업데이트된 li 요소 반환
     }
 
-    // 할 일 항목에 이벤트 리스너 추가 함수
-    function addEventListenersToTodoItem(todoItem, todoId) {
-        const completeBtn = todoItem.querySelector(".complete-btn");
-        const editBtn = todoItem.querySelector(".edit-btn");
-        const deleteBtn = todoItem.querySelector(".delete-btn");
-        const saveBtn = todoItem.querySelector(".save-btn");
-        const cancelBtn = todoItem.querySelector(".cancel-btn");
+    // 할 일 목록을 불러와서 화면에 표시하는 함수
+    async function loadTodos() {
+        if (!(await checkApiStatus())) return; // API 상태 먼저 확인
 
-        if (completeBtn) {
-            completeBtn.addEventListener("click", () => {
-                const isCompleted = todoItem.classList.contains("completed");
-                toggleTodoComplete(todoId, !isCompleted); // 상태 토글
+        try {
+            const response = await fetch(`${API_URL}/todos`);
+            if (!response.ok)
+                throw new Error(`API 요청 실패: ${response.status}`);
+            const todos = await response.json();
+
+            todoList.innerHTML = ""; // 기존 목록 비우기 (최초 로딩 시)
+
+            if (Array.isArray(todos) && todos.length > 0) {
+                todos.forEach((todo) => {
+                    const todoItem = createOrUpdateTodoElement(todo);
+                    todoList.appendChild(todoItem);
+                });
+                emptyTodoMessage.style.display = "none";
+            } else {
+                emptyTodoMessage.style.display = "block"; // 목록 비었을 때 메시지 표시
+            }
+        } catch (error) {
+            displayError("할 일 목록 불러오기 실패", error);
+        }
+    }
+
+    // 새 할 일 추가 함수
+    async function addTodo() {
+        const title = todoInput.value.trim();
+        const description = todoDescription.value.trim();
+        if (!title) {
+            alert("할 일을 입력해주세요!");
+            return;
+        }
+
+        const newTodoData = { title, description }; // completed는 서버 기본값(false) 사용
+
+        try {
+            const response = await fetch(`${API_URL}/todos`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newTodoData),
             });
-        }
-        if (editBtn) {
-            editBtn.addEventListener("click", () => handleEdit(todoId)); // ID만 전달
-        }
-        if (deleteBtn) {
-            deleteBtn.addEventListener("click", () => deleteTodo(todoId));
-        }
-        if (saveBtn) {
-            saveBtn.addEventListener("click", () => handleSave(todoId));
-        }
-        if (cancelBtn) {
-            cancelBtn.addEventListener("click", () => handleCancel(todoId));
+            if (!response.ok)
+                throw new Error(`API 요청 실패: ${response.status}`);
+            const createdTodo = await response.json();
+
+            // [개선 1] 전체 목록 새로고침 대신 새 항목만 추가
+            const todoItem = createOrUpdateTodoElement(createdTodo);
+            todoList.appendChild(todoItem);
+            emptyTodoMessage.style.display = "none"; // 목록 있으니 메시지 숨김
+
+            todoInput.value = ""; // 입력 필드 초기화
+            todoDescription.value = "";
+            displayInfo("추가되었습니다.");
+        } catch (error) {
+            displayError("추가 실패", error);
         }
     }
 
-    // 수정 버튼 클릭 시 -> 편집 모드로 전환
-    function handleEdit(todoId) {
-        const todoItem = document.querySelector(
-            `.todo-item[data-id="${todoId}"]`
-        );
-        if (!todoItem || todoItem.classList.contains("editing")) return; // 이미 편집 중이면 무시
+    // 할 일 업데이트 API 호출 함수 (완료 토글 및 내용 수정 공통 사용)
+    async function updateTodoOnServer(todoId, updateData) {
+        try {
+            const response = await fetch(`${API_URL}/todos/${todoId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updateData),
+            });
+            if (!response.ok)
+                throw new Error(`API 업데이트 실패: ${response.status}`);
+            const updatedTodo = await response.json();
 
-        todoItem.classList.add("editing"); // 편집 모드 클래스 추가
+            // [개선 1] 전체 목록 새로고침 대신 해당 항목만 업데이트
+            createOrUpdateTodoElement(updatedTodo); // 기존 li 찾아서 내용 업데이트
+            displayInfo("수정되었습니다.");
+            return true; // 성공 여부 반환
+        } catch (error) {
+            displayError("수정 실패", error);
+            return false;
+        }
+    }
 
-        // 표시 요소 숨기기
-        const titleDisplay = todoItem.querySelector(".todo-title-display");
-        const descriptionDisplay = todoItem.querySelector(
-            ".todo-description-display"
-        );
-        if (titleDisplay) titleDisplay.style.display = "none";
-        if (descriptionDisplay) descriptionDisplay.style.display = "none";
+    // 할 일 삭제 API 호출 함수
+    async function deleteTodoOnServer(todoId) {
+        try {
+            const response = await fetch(`${API_URL}/todos/${todoId}`, {
+                method: "DELETE",
+            });
+            if (!response.ok) throw new Error("Delete failed");
+            // const data = await response.json(); // 삭제 응답 본문은 보통 없음
 
-        // 입력 요소 보이기
-        const titleInput = todoItem.querySelector(".todo-title-input");
-        const descriptionInput = todoItem.querySelector(
-            ".todo-description-input"
-        );
-        if (titleInput) titleInput.style.display = "block";
-        if (descriptionInput) descriptionInput.style.display = "block";
+            // [개선 1] 전체 목록 새로고침 대신 해당 항목만 삭제
+            const todoItem = todoList.querySelector(
+                `.todo-item[data-id="${todoId}"]`
+            );
+            if (todoItem) {
+                todoItem.remove();
+            }
+            // 목록이 비었는지 확인 후 메시지 표시
+            if (todoList.children.length === 0) {
+                emptyTodoMessage.style.display = "block";
+            }
+            displayInfo("삭제되었습니다.");
+            return true;
+        } catch (error) {
+            displayError("삭제 실패", error);
+            alert("삭제 중 오류 발생"); // alert는 유지하거나 다른 방식으로 변경
+            return false;
+        }
+    }
 
-        // 기본 액션 버튼 숨기기
+    // --- [개선 2] 이벤트 위임: todoList 에 이벤트 리스너 하나만 등록 ---
+    todoList.addEventListener("click", (event) => {
+        const target = event.target; // 클릭된 요소
+        const todoItem = target.closest(".todo-item"); // 가장 가까운 부모 li 찾기
+        if (!todoItem) return; // li 내부가 아니면 무시
+
+        const todoId = todoItem.dataset.id;
+
+        // 어떤 버튼이 눌렸는지 확인
+        if (target.matches(".complete-btn")) {
+            const isCompleted = todoItem.classList.contains("completed");
+            const updateData = { completed: !isCompleted }; // 서버에 보낼 데이터
+            updateTodoOnServer(todoId, updateData);
+        } else if (target.matches(".edit-btn")) {
+            switchToEditMode(todoItem);
+        } else if (target.matches(".delete-btn")) {
+            if (confirm("정말 삭제하시겠습니까?")) {
+                deleteTodoOnServer(todoId);
+            }
+        } else if (target.matches(".save-btn")) {
+            handleSave(todoItem);
+        } else if (target.matches(".cancel-btn")) {
+            switchToDisplayMode(todoItem); // 취소 시 표시 모드로 변경
+        }
+    });
+
+    // 편집 모드로 전환하는 함수
+    function switchToEditMode(todoItem) {
+        if (!todoItem || todoItem.classList.contains("editing")) return;
+
+        todoItem.classList.add("editing");
+
+        // 표시 요소 숨기기, 입력 요소 보이기
+        todoItem.querySelector(".todo-title-display").style.display = "none";
+        const descDisplay = todoItem.querySelector(".todo-description-display");
+        if (descDisplay) descDisplay.style.display = "none";
+
+        todoItem.querySelector(".todo-title-input").style.display = "block";
+        todoItem.querySelector(".todo-description-input").style.display =
+            "block";
+
+        // 기본 액션 버튼 숨기기, 편집 액션 버튼 보이기
         todoItem.querySelector(".complete-btn").style.display = "none";
         todoItem.querySelector(".edit-btn").style.display = "none";
         todoItem.querySelector(".delete-btn").style.display = "none";
-
-        // 편집 액션 버튼 보이기
         todoItem.querySelector(".save-btn").style.display = "inline-block";
         todoItem.querySelector(".cancel-btn").style.display = "inline-block";
 
-        if (titleInput) titleInput.focus(); // 제목 입력 필드에 포커스
+        todoItem.querySelector(".todo-title-input").focus();
     }
 
-    // 저장 버튼 클릭 시 -> 변경사항 저장
-    async function handleSave(todoId) {
-        const todoItem = document.querySelector(
-            `.todo-item[data-id="${todoId}"]`
-        );
+    // 표시 모드로 전환하는 함수 (수정 저장 또는 취소 시)
+    function switchToDisplayMode(todoItem) {
+        if (!todoItem) return;
+
+        // 편집 모드 클래스 제거하여 CSS로 제어
+        todoItem.classList.remove("editing");
+
+        // 스타일 직접 제어 대신 CSS 클래스에 맡김
+        // 필요시 createOrUpdateTodoElement 를 다시 호출하여 내용을 완전히 다시 그릴 수도 있음
+        const updatedTodoData = {
+            id: todoItem.dataset.id,
+            title: todoItem.dataset.title,
+            description: todoItem.dataset.description,
+            completed: todoItem.dataset.completed === "true", // boolean으로 변환
+            created_at: todoItem.dataset.createdAt,
+            updated_at: todoItem.dataset.updatedAt,
+        };
+        createOrUpdateTodoElement(updatedTodoData); // 데이터셋 기준으로 다시 렌더링
+    }
+
+    // 저장 버튼 처리 함수
+    async function handleSave(todoItem) {
         if (!todoItem || !todoItem.classList.contains("editing")) return;
 
+        const todoId = todoItem.dataset.id;
         const titleInput = todoItem.querySelector(".todo-title-input");
         const descriptionInput = todoItem.querySelector(
             ".todo-description-input"
         );
+        const completed = todoItem.classList.contains("completed"); // 현재 완료 상태 가져오기
 
-        const newTitle = titleInput
-            ? titleInput.value.trim()
-            : todoItem.dataset.title; // 입력 필드 없으면 원래 값
-        const newDescription = descriptionInput
-            ? descriptionInput.value.trim()
-            : todoItem.dataset.description;
-        const isCompleted = todoItem.classList.contains("completed"); // 현재 완료 상태 유지
+        const newTitle = titleInput.value.trim();
+        const newDescription = descriptionInput.value.trim();
 
         if (!newTitle) {
             alert("제목은 비워둘 수 없습니다!");
@@ -303,109 +331,32 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // API 호출하여 업데이트
-        await updateTodoItem(todoId, newTitle, newDescription, isCompleted);
-        // 성공 여부와 관계없이 loadTodos가 목록을 다시 그리므로 편집 모드 해제됨
+        const updateData = {
+            title: newTitle,
+            description: newDescription,
+            completed: completed,
+        };
+        await updateTodoOnServer(todoId, updateData);
+        // updateTodoOnServer 성공 시 내부적으로 createOrUpdateTodoElement가 호출되어 표시 모드로 전환됨
+        // 실패 시에는 편집 모드가 유지될 수 있으므로, 필요하면 여기서도 switchToDisplayMode 호출 고려
     }
 
-    // 취소 버튼 클릭 시 -> 표시 모드로 복구
-    function handleCancel(todoId) {
-        const todoItem = document.querySelector(
-            `.todo-item[data-id="${todoId}"]`
-        );
-        if (!todoItem || !todoItem.classList.contains("editing")) return;
+    // --- 초기화 실행 ---
+    loadTodos(); // 페이지 로드 시 할 일 목록 불러오기
 
-        // 간단하게 전체 목록을 다시 로드하여 원래 상태로 복구
-        // (개별 항목 복구 로직보다 구현이 쉬움)
-        // 개별 항목 복구: 입력 필드 숨기고, 표시 요소 보이고, 버튼 토글
-        // renderTodoItemContent(todoItem, {id: todoId, title: todoItem.dataset.title, description: todoItem.dataset.description, completed: todoItem.classList.contains('completed'), created_at: '...', updated_at: '...'}, formatDateTime); // 시간 정보 다시 가져와야 함
-
-        // 임시: 전체 목록 새로고침으로 복구
-        loadTodos();
-    }
-
-    // 할 일 업데이트 API 호출 함수
-    async function updateTodoItem(todoId, title, description, completed) {
-        const updatedTodo = { title, description, completed };
-
-        try {
-            const response = await fetch(`${API_URL}/todos/${todoId}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(updatedTodo),
-            });
-
-            if (!response.ok) {
-                throw new Error(
-                    `API 업데이트 실패: ${response.status} ${response.statusText}`
-                );
-            }
-            const data = await response.json();
-            console.log("할 일 업데이트 결과:", data);
-            loadTodos(); // 목록 새로고침 (성공 시)
-        } catch (error) {
-            console.error("할 일 업데이트 오류:", error);
-            alert("할 일 업데이트 중 오류가 발생했습니다.");
-            // 오류 발생 시에도 목록을 다시 로드하여 편집 모드 해제 (선택적)
-            // loadTodos();
+    // '추가' 버튼 이벤트 리스너 (이벤트 위임과 별개로 필요)
+    addTodoButton.addEventListener("click", addTodo);
+    // Enter 키로 추가 (선택 사항)
+    todoInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+            addTodo();
         }
-    }
-
-    // 할 일 완료 상태 토글 함수 (updateTodoItem 사용하도록 수정 가능)
-    async function toggleTodoComplete(todoId, completed) {
-        // 기존 방식 유지 또는 updateTodoItem 사용
-        // updateTodoItem 사용 예시:
-        const todoItem = document.querySelector(
-            `.todo-item[data-id="${todoId}"]`
-        );
-        if (!todoItem) return;
-        const title = todoItem.dataset.title; // data 속성에서 가져오기
-        const description = todoItem.dataset.description;
-        await updateTodoItem(todoId, title, description, completed);
-
-        /* // 기존 방식:
-        try {
-            const todoItem = document.querySelector(`.todo-item[data-id="${todoId}"]`);
-            const todoTitle = todoItem.querySelector('.todo-title-display')?.textContent || todoItem.dataset.title;
-            const todoDescription = todoItem.querySelector('.todo-description-display')?.textContent || todoItem.dataset.description;
-
-            const updatedTodo = {
-                title: todoTitle,
-                description: todoDescription,
-                completed: completed,
-            };
-            const response = await fetch(`${API_URL}/todos/${todoId}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(updatedTodo),
-            });
-            if (!response.ok) throw new Error('Update failed');
-            const data = await response.json();
-            console.log("할 일 업데이트 결과:", data);
-            loadTodos();
-        } catch (error) {
-            console.error("할 일 상태 변경 오류:", error);
+    });
+    todoDescription.addEventListener("keypress", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            // Shift+Enter는 줄바꿈 유지
+            e.preventDefault(); // 기본 Enter 동작(줄바꿈) 방지
+            addTodo();
         }
-        */
-    }
-
-    // 할 일 삭제 함수
-    async function deleteTodo(todoId) {
-        // ... 이전과 동일 ...
-        if (!confirm("삭제하시겠습니까?")) return;
-        try {
-            const response = await fetch(`${API_URL}/todos/${todoId}`, {
-                method: "DELETE",
-            });
-            if (!response.ok) throw new Error("Delete failed");
-            const data = await response.json();
-            console.log("할 일 삭제 결과:", data);
-            loadTodos();
-        } catch (error) {
-            console.error("할 일 삭제 오류:", error);
-            alert("삭제 중 오류 발생");
-        }
-    }
+    });
 });

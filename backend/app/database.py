@@ -1,7 +1,6 @@
 import os
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 from dotenv import load_dotenv
 
 
@@ -15,7 +14,7 @@ if DATABASE_URL is None:
 # SQLAlchemy 설정
 # create_engine은 SQLAlchemy의 핵심 인터페이스입니다.
 # 데이터베이스 서버와의 연결 풀을 관리합니다.
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL, pool_pre_ping=True, pool_recycle=3600)
 
 # 데이터베이스 세션 생성
 # sessionmaker는 Session 클래스를 만드는 팩토리 함수입니다.
@@ -30,6 +29,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # 이 Base 클래스를 상속받는 클래스들은 SQLAlchemy에 의해 테이블과 매핑됩니다.
 Base = declarative_base()
 
+
 # 데이터베이스 세션을 가져오는 함수 (DI)
 def get_db():
     db = SessionLocal()
@@ -37,4 +37,3 @@ def get_db():
         yield db
     finally:
         db.close()
-

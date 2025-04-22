@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, Text
-from sqlalchemy.sql import func
+from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, Text, func
 from .database import Base
+
 
 class Todo(Base):
     __tablename__ = "todos"
@@ -9,6 +9,10 @@ class Todo(Base):
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     completed = Column(Boolean, default=False)
-    created_at = Column(TIMESTAMP, default=func.now())
-    updated_at = Column(TIMESTAMP, default=func.now(), onupdate=func.now())
-
+    created_at = Column(TIMESTAMP, nullable=False, server_default=func.utc_timestamp())
+    updated_at = Column(
+        TIMESTAMP,
+        nullable=False,
+        server_default=func.utc_timestamp(),
+        onupdate=func.utc_timestamp(),
+    )

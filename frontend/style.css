@@ -107,24 +107,6 @@ h1 {
     gap: 5px;
 }
 
-.todo-actions button {
-    padding: 5px 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.complete-btn {
-    background-color: #4CAF50;
-    color: white;
-}
-
-.delete-btn {
-    background-color: #f44336;
-    color: white;
-}
-
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -159,23 +141,6 @@ h1 {
     gap: 4px;
 }
 
-.todo-actions button {
-    padding: 5px 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.2s ease; /* 부드러운 효과 추가 */
-}
-
-.complete-btn {
-    background-color: #4CAF50;
-    color: white;
-}
-.complete-btn:hover {
-    background-color: #45a049;
-}
-
 /* 수정 버튼 스타일 추가 */
 .edit-btn {
     background-color: #2196F3; /* 파란색 계열 */
@@ -183,14 +148,6 @@ h1 {
 }
 .edit-btn:hover {
     background-color: #1e88e5;
-}
-
-.delete-btn {
-    background-color: #f44336;
-    color: white;
-}
-.delete-btn:hover {
-    background-color: #e53935;
 }
 
 /* --- 인라인 편집 스타일 --- */
