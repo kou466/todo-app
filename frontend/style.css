@@ -141,6 +141,33 @@ h1 {
     gap: 4px;
 }
 
+/* --- 버튼 공통 및 개별 스타일 복원 --- */
+.todo-actions button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s ease; /* 부드러운 효과 추가 */
+}
+
+.complete-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+.complete-btn:hover {
+    background-color: #45a049;
+}
+
+.delete-btn {
+    background-color: #f44336;
+    color: white;
+}
+.delete-btn:hover {
+    background-color: #e53935;
+}
+/* ------------------------------------ */
+
 /* 수정 버튼 스타일 추가 */
 .edit-btn {
     background-color: #2196F3; /* 파란색 계열 */
