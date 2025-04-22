@@ -9,12 +9,20 @@
 </head>
 <body>
     <div class="container">
-        <h1>Todo Test</h1>
+        <h1>Todo List</h1>
+        <div id="apiStatus">API 상태 확인 중</div>
         <div class="input-container">
-            <input type="text" id="todoInput" placeholder="할 일을 입력하세요">
+            <div class="form-group">
+                <input type="text" id="todoInput" placeholder="할 일을 입력하세요">
+                <textarea id="todoDescription" placeholder="설명을 입력하세요"></textarea>
+            </div>
             <button id="addTodo">추가</button>
         </div>
-        <ul id="todoList"></ul>
+        <div class="todo-container">
+            <h2>할 일 목록</h2>
+            <ul id="todoList" class="todo-items"></ul>
+            <div id="emptyTodoMessage" class="empty-message">할 일이 없습니다. 새로운 할 일을 추가해보세요!</div>
+        </div>
     </div>
 </body>
 </html>

@@ -1,0 +1,264 @@
+/* Todo 앱 스타일 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+    padding: 20px;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.input-container {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#todoInput, #todoDescription {
+    padding: 10px;
+    border: 1px solid #ddd;
+    font-size: 16px;
+}
+
+#todoInput {
+    border-radius: 4px 0 0 0;
+    margin-bottom: 5px;
+}
+
+#todoDescription {
+    border-radius: 0 0 0 4px;
+    min-height: 60px;
+    resize: vertical;
+}
+
+#addTodo {
+    padding: 10px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+    font-size: 16px;
+    align-self: stretch;
+}
+
+#addTodo:hover {
+    background-color: #45a049;
+}
+
+#todoList {
+    list-style-type: none;
+}
+
+.todo-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    animation: fadeIn 0.3s;
+}
+
+.todo-item:last-child {
+    border-bottom: none;
+}
+
+.todo-item.completed .todo-text {
+    text-decoration: line-through;
+    color: #888;
+}
+
+.todo-text {
+    flex: 1;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.todo-description {
+    font-size: 14px;
+    color: #777;
+    margin-top: 5px;
+}
+
+.todo-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.todo-actions button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.complete-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.delete-btn {
+    background-color: #f44336;
+    color: white;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#apiStatus {
+    text-align: center;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    color: #666;
+    font-size: 14px;
+}
+
+.api-success {
+    background-color: #d4edda !important;
+    color: #155724 !important;
+}
+
+.api-error {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
+}
+
+.todo-timestamps {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #888;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.todo-actions button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s ease; /* 부드러운 효과 추가 */
+}
+
+.complete-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+.complete-btn:hover {
+    background-color: #45a049;
+}
+
+/* 수정 버튼 스타일 추가 */
+.edit-btn {
+    background-color: #2196F3; /* 파란색 계열 */
+    color: white;
+}
+.edit-btn:hover {
+    background-color: #1e88e5;
+}
+
+.delete-btn {
+    background-color: #f44336;
+    color: white;
+}
+.delete-btn:hover {
+    background-color: #e53935;
+}
+
+/* --- 인라인 편집 스타일 --- */
+
+/* 기본적으로 편집 요소 숨김 */
+.todo-item .todo-title-input,
+.todo-item .todo-description-input,
+.todo-item .save-btn,
+.todo-item .cancel-btn {
+    display: none;
+}
+
+/* 편집 모드(.editing 클래스가 li에 추가되었을 때) 스타일 */
+.todo-item.editing .todo-title-display,
+.todo-item.editing .todo-description-display,
+.todo-item.editing .complete-btn,
+.todo-item.editing .edit-btn,
+.todo-item.editing .delete-btn {
+    display: none; /* 편집 모드 시 표시 요소 및 기본 버튼 숨김 */
+}
+
+.todo-item.editing .todo-title-input,
+.todo-item.editing .todo-description-input {
+    display: block; /* 편집 모드 시 입력 요소 보임 */
+}
+.todo-item.editing .save-btn,
+.todo-item.editing .cancel-btn {
+     display: inline-block; /* 편집 모드 시 편집 버튼 보임 (인라인 블록) */
+}
+
+
+/* 입력 필드 스타일 (편집 모드) */
+.todo-title-input {
+    font-size: 18px; /* 제목 h3와 유사하게 */
+    padding: 5px;
+    margin-bottom: 5px; /* 설명 입력과의 간격 */
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* 패딩 포함하여 너비 100% */
+}
+
+.todo-description-input {
+    font-size: 14px; /* 설명 p와 유사하게 */
+    padding: 5px;
+    width: 100%;
+    min-height: 60px; /* 기본 높이 */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical; /* 세로 크기 조절 가능 */
+    font-family: inherit; /* body 폰트 상속 */
+    box-sizing: border-box; /* 패딩 포함 너비 100% */
+}
+
+
+/* 저장, 취소 버튼 스타일 */
+.save-btn {
+    background-color: #4CAF50; /* 완료 버튼과 유사하게 */
+    color: white;
+}
+.save-btn:hover {
+     background-color: #45a049;
+}
+
+.cancel-btn {
+    background-color: #f44336; /* 삭제 버튼과 유사하게 */
+    color: white;
+}
+.cancel-btn:hover {
+     background-color: #e53935;
+}

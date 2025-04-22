@@ -1,0 +1,12 @@
+# 모든 파일을 자동으로 텍스트 또는 바이너리로 감지합니다.
+* text=auto
+
+# 텍스트 파일로 감지된 모든 파일에 대해 저장소에는 LF 줄바꿈을 사용하도록 강제합니다.
+# 체크아웃 시에는 core.autocrlf 설정에 따라 OS에 맞게 변환될 수 있습니다.
+*.{py,js,html,css,json,md,txt,ini,yaml,yml} text eol=lf
+
+# 특정 파일 타입은 바이너리로 취급 (예: 이미지, 폰트 등)
+# *.png binary
+# *.jpg binary
+# *.woff binary
+# (필요에 따라 바이너리 파일 확장자 추가)
